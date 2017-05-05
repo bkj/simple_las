@@ -1,7 +1,8 @@
 """
-  expt_mnist-v2.py
+  expt_mnist.py
   
-  Cleaned up + simplified version of `expt_mnist`
+  Simplified version of
+    https://github.com/AutonlabCMU/ActiveSearch/blob/sibi/kernelAS3/python/expt_mnist.py
 """
 
 from __future__ import division
