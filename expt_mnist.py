@@ -18,7 +18,7 @@ from simple_las import SimpleLAS
 # --
 # Helpers
 
-def load_mnist(fname='./mnist.pkl.gz'):
+def load_mnist(fname='./data/mnist.pkl.gz'):
   train_set, valid_set, test_set = cPickle.load(gzip.open(fname, 'rb'))
   X = np.r_[train_set[0], valid_set[0], test_set[0]]
   Y = np.r_[train_set[1], valid_set[1], test_set[1]]
