@@ -9,15 +9,12 @@
 
 from __future__ import division
 
-import os
-import sys
 import gzip
 import cPickle
 import numpy as np
-import scipy as sp
 
-import activeSearchInterface as ASI
 from simple_las import SimpleLAS
+import activeSearchInterface as ASI
 
 # --
 # Helpers
