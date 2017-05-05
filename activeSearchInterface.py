@@ -1,3 +1,7 @@
+
+# from 
+# https://github.com/AutonlabCMU/ActiveSearch/blob/sibi/kernelAS3/python/activeSearchInterface.py
+
 from __future__ import division, print_function
 import time
 import numpy as np, numpy.linalg as nlg, numpy.random as nr
