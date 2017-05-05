@@ -1,7 +1,8 @@
 """
-  test.py
+  regression-test.py
   
-  Compare performance of `SimpleLAS` to reference implementation
+  Compare performance of `SimpleLAS` to reference implementation from 
+    https://github.com/AutonlabCMU/ActiveSearch/blob/sibi/kernelAS3/python/activeSearchInterface.py
 """
 
 from __future__ import division
