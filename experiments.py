@@ -72,9 +72,13 @@ n_iter = 200
 if dataset == 'mnist':
   X0, y0 = load_mnist()
   alpha = 0
-else:
+  cl = 1
+  y0 = y0 == cl
+elif dataset == 'a9a':
   X0, y0 = load_a9a()
   alpha = 1e-6
+else:
+  raise Exception()
 
 X0 /= np.sqrt((X0 ** 2).sum(axis=0))
 
@@ -91,7 +95,7 @@ act_prev = y.mean()
 # --
 # Run SimpleLAS
 
-def run_activesearch(X, y)
+def run_activesearch(X, y):
   init_pt = np.random.choice(np.where(y)[0], n_init, replace=False)
   init_labels = {p:1 for p in init_pt}
   
