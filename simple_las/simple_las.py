@@ -38,6 +38,7 @@ class SimpleLAS():
         but in some applications it might be useful to get a set of proposals
     """
     # Init data
+    X = X.T
     self.X = X.T
     dim, n_obs = X.shape
     
