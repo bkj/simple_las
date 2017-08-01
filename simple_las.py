@@ -18,13 +18,27 @@
 """
 
 from __future__ import division
+import sys
 import numpy as np
 
 class SimpleLAS():
   
-  def __init__(self, X, init_labels, pi=0.05, eta=0.5, w0=None, alpha=0):
+  def __init__(self, X, init_labels, pi=0.05, eta=0.5, w0=None, alpha=0, n=1):
+    """
+      Simple implementation of linearized active search
+      
+      X: data matrix
+      init_labels: dictionary like {idx:lab}
+      pi: ...
+      eta: ...
+      w0: ...
+      alpha: ...
+      n: number of candidate messages to return per iteration
+        NB: Probably, any theoretical guarantees from the paper are degraded when n > 1,
+        but in some applications it might be useful to get a set of proposals
+    """
     # Init data
-    self.X = X
+    self.X = X.T
     dim, n_obs = X.shape
     
     # Init params
@@ -49,8 +63,9 @@ class SimpleLAS():
     self._init_matrices()
     
     # Init nominations
-    self.next_message = self._nominate_next_message()
-  
+    self.n = n
+    self.next_message = self._nominate_next_messages()
+    
   def setLabel(self, idx, lbl):
     assert((lbl == 0) or (lbl == 1))
     
@@ -60,17 +75,22 @@ class SimpleLAS():
     self.labels[idx] = lbl
     self.labeled_idxs.append(idx)
     self.unlabeled_idxs.remove(idx)
-    print 'Iter: %i, Hits: %i' % (self.iter, np.sum(self.hits))
     
     # Update matrices
     self._update_matrices(idx, lbl)
     
     # Update nomination
-    self.next_message = self._nominate_next_message()
+    self.next_message = self._nominate_next_messages()
   
-  def _nominate_next_message(self):
-    next_idx = (self.f + self.alpha * self.IM)[self.unlabeled_idxs].argmax()
-    return self.unlabeled_idxs[next_idx]
+  def _nominate_next_messages(self):
+    if self.n == 1:
+      next_idx = (self.f + self.alpha * self.IM)[self.unlabeled_idxs].argmax()
+      return self.unlabeled_idxs[next_idx]
+    else:
+      tmp = (self.f + self.alpha * self.IM)[self.unlabeled_idxs]
+      next_idx = np.argpartition(tmp, -self.n)[-self.n:]
+      next_idx = next_idx[np.argsort(tmp[next_idx])][::-1]
+      return np.array(self.unlabeled_idxs)[next_idx]
   
   def _init_matrices(self):
     X = self.X

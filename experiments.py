@@ -29,7 +29,7 @@ def load_mnist(fname='./data/mnist.pkl.gz'):
   train_set, valid_set, test_set = cPickle.load(gzip.open(fname, 'rb'))
   X = np.r_[train_set[0], valid_set[0], test_set[0]]
   y = np.r_[train_set[1], valid_set[1], test_set[1]]
-  return X.T, y
+  return X, y
 
 
 def load_a9a(fname='./data/a9a_scaled_dataset.npz', cl=1):
@@ -44,7 +44,7 @@ def load_a9a(fname='./data/a9a_scaled_dataset.npz', cl=1):
   y = np.r_[y_tra, y_test].squeeze()
   y = np.where(y == 1, 1, 0)
   
-  return X.T, y == cl
+  return X, y == cl
 
 
 def change_prev(X, y, prev):
@@ -55,7 +55,7 @@ def change_prev(X, y, prev):
   pos = np.random.choice(pos, n, replace=False)
   
   inds = np.random.permutation(np.hstack([pos, neg]))
-  return X[:,inds], y[inds]
+  return X[inds], y[inds]
 
 # --
 # Params
@@ -80,7 +80,7 @@ elif dataset == 'a9a':
 else:
   raise Exception()
 
-X0 /= np.sqrt((X0 ** 2).sum(axis=0))
+X0 /= np.sqrt((X0 ** 2).sum(axis=1, keepdims=True))
 
 # --
 # Change prevalance
