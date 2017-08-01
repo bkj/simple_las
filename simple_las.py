@@ -60,7 +60,7 @@ class SimpleLAS():
     self.labels[idx] = lbl
     self.labeled_idxs.append(idx)
     self.unlabeled_idxs.remove(idx)
-    print('Iter: %i, Hits: %i' % (self.iter, np.sum(self.hits)))
+    print 'Iter: %i, Hits: %i' % (self.iter, np.sum(self.hits))
     
     # Update matrices
     self._update_matrices(idx, lbl)
@@ -69,7 +69,7 @@ class SimpleLAS():
     self.next_message = self._nominate_next_message()
   
   def _nominate_next_message(self):
-    next_idx = np.argmax((self.f + self.alpha * self.IM)[self.unlabeled_idxs])
+    next_idx = (self.f + self.alpha * self.IM)[self.unlabeled_idxs].argmax()
     return self.unlabeled_idxs[next_idx]
   
   def _init_matrices(self):
@@ -87,11 +87,11 @@ class SimpleLAS():
     K         = np.eye(dim) - X.dot(self.BDinv[:,None] * X.T)
     self.Kinv = np.linalg.inv(K)
     
-    self.f = self.q + self.BDinv * ((X.T.dot(self.Kinv.dot(X.dot(self.q)))))
+    self.f = self.q + self.BDinv * X.T.dot(self.Kinv.dot(X.dot(self.q)))
     
     if self.alpha > 0:
       self.dP = (1. / self.l - self.w0) * D
-      self.dPpi = (1. / self.l - self.pi * self.w0) * D # L - pi*U
+      self.dPpi = (1. / self.l - self.pi * self.w0) * D
       self.z = np.where(self.labels == -1, self.BDinv, 0)
       self.J = np.squeeze(((self.Kinv.dot(self.X)) * self.X).sum(0))
       self.IM = self._compute_IM()
@@ -112,7 +112,7 @@ class SimpleLAS():
     denom     = 1 + gamma * Xi.T.dot(Kinv_Xi)
     self.Kinv = self.Kinv - gamma * (num / denom)
     
-    self.f = self.q + self.BDinv * ((X.T.dot(self.Kinv.dot(X.dot(self.q)))))
+    self.f = self.q + self.BDinv * X.T.dot(self.Kinv.dot(X.dot(self.q)))
     
     if self.alpha > 0:
       self.z[idx] = 0
@@ -122,8 +122,8 @@ class SimpleLAS():
   def _compute_IM(self):
     X = self.X
     
-    Minv_u = self.z + self.BDinv * (X.T.dot(self.Kinv.dot(X.dot(self.z))))
-    dpf = (self.dPpi - self.dP * self.f)
+    Minv_u = self.z + self.BDinv * X.T.dot(self.Kinv.dot(X.dot(self.z)))
+    dpf = self.dPpi - self.dP * self.f
     diagMi = (1 + self.BDinv * self.J) * self.BDinv
     Df_tilde = dpf * diagMi / (1 + self.dP * diagMi)
     DF = (dpf - self.dP * Df_tilde) * Minv_u
