@@ -2,7 +2,7 @@
 
 Simplified reimplementation of linearized active search from 
 
-    https://arxiv.org/pdf/1602.01024.pdf
+    https://arxiv.org/pdf/1705.00334.pdf
 
 as implemented in
 
