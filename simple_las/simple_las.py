@@ -27,7 +27,7 @@ class SimpleLAS():
     """
       Simple implementation of linearized active search
       
-      X: data matrix
+      X: data matrix (nobs rows, dim cols)
       init_labels: dictionary like {idx:lab}
       pi: ...
       eta: ...
@@ -38,8 +38,8 @@ class SimpleLAS():
         but in some applications it might be useful to get a set of proposals
     """
     # Init data
-    X = X.T
-    self.X = X.T
+    X = X.T # !! For whatever, 
+    self.X = X
     dim, n_obs = X.shape
     
     # Init params
