@@ -1,3 +1,6 @@
-data/*
+*/data/*
 *pyc
 *gz
+build/*
+dist/*
+simple_las.egg-info/*
