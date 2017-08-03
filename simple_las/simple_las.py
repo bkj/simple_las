@@ -19,11 +19,12 @@
 
 from __future__ import division
 import sys
+import atexit
 import numpy as np
 
 class SimpleLAS():
   
-  def __init__(self, X, init_labels, pi=0.05, eta=0.5, w0=None, alpha=0, n=1):
+  def __init__(self, X, init_labels, pi=0.05, eta=0.5, w0=None, alpha=0, n=1, verbose=False):
     """
       Simple implementation of linearized active search
       
@@ -38,7 +39,10 @@ class SimpleLAS():
         but in some applications it might be useful to get a set of proposals
     """
     # Init data
-    X = X.T # !! For whatever, 
+    self.verbose = verbose
+    
+    X = X.T # !! For whatever reason, original implementation used 1 col per obs, which is nonstandard IMO
+    
     self.X = X
     dim, n_obs = X.shape
     
@@ -66,7 +70,15 @@ class SimpleLAS():
     # Init nominations
     self.n = n
     self.next_message = self._nominate_next_messages()
+  
+  def save(self, outpath):
+    if self.verbose:
+      print >> sys.stderr, 'simple_las: saving'
     
+    np.save(outpath + '.f', self.f)
+    np.save(outpath + '.IM', self.IM)
+    np.save(outpath + '.labeled', self.labeled_idxs)
+  
   def setLabel(self, idx, lbl):
     assert((lbl == 0) or (lbl == 1))
     
@@ -91,6 +103,13 @@ class SimpleLAS():
       tmp = (self.f + self.alpha * self.IM)[self.unlabeled_idxs]
       next_idx = np.argpartition(tmp, -self.n)[-self.n:]
       next_idx = next_idx[np.argsort(tmp[next_idx])][::-1]
+      
+      if self.verbose:
+        print np.vstack([
+          self.f[next_idx],
+          self.alpha * self.IM[next_idx]
+        ]).T
+      
       return np.array(self.unlabeled_idxs)[next_idx]
   
   def _init_matrices(self):
@@ -152,3 +171,4 @@ class SimpleLAS():
     IM = self.f * (DF - Df_tilde)
     IM = IM * self.f.mean() / IM.mean()
     return IM.squeeze()
+
