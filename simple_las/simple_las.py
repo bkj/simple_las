@@ -19,12 +19,13 @@
 
 from __future__ import division
 import sys
-import atexit
+import h5py
+from datetime import datetime
 import numpy as np
 
-class SimpleLAS():
+class SimpleLAS(object):
   
-  def __init__(self, X, init_labels, pi=0.05, eta=0.5, w0=None, alpha=0, n=1, verbose=False):
+  def __init__(self, X, init_labels={}, pi=0.05, eta=0.5, w0=None, alpha=0, n=1, verbose=False):
     """
       Simple implementation of linearized active search
       
@@ -47,6 +48,7 @@ class SimpleLAS():
     dim, n_obs = X.shape
     
     # Init params
+    self.n = n
     self.pi = pi
     self.eta = eta
     self.l = (1 - self.eta) / self.eta
@@ -55,30 +57,22 @@ class SimpleLAS():
     if self.w0 is None:
       self.w0 = 1 / n_obs
     
-    # Init labels
     self.iter = 0
-    self.hits = [sum(init_labels.values())]
     self.labels = -np.ones(n_obs)
+    
+    self.hits = [sum(init_labels.values())]
     self.labeled_idxs = init_labels.keys()
-    self.unlabeled_idxs = list(set(range(n_obs)) - set(self.labeled_idxs))
+    self.unlabeled_idxs = list(set(range(self.labels.shape[0])) - set(self.labeled_idxs))
     for lidx in self.labeled_idxs:
       self.labels[lidx] = init_labels[lidx]
-        
-    # Init matrices
+    
     self._init_matrices()
     
-    # Init nominations
-    self.n = n
-    self.next_message = self._nominate_next_messages()
-  
-  def save(self, outpath):
-    if self.verbose:
-      print >> sys.stderr, 'simple_las: saving'
-    
-    np.save(outpath + '.f', self.f)
-    np.save(outpath + '.IM', self.IM)
-    np.save(outpath + '.labeled', self.labeled_idxs)
-  
+    if init_labels:
+      self.next_message = self._nominate_next_messages()
+    else:
+      self.next_message = np.random.choice(range(n_obs), n, replace=False)
+
   def setLabel(self, idx, lbl):
     assert((lbl == 0) or (lbl == 1))
     
@@ -98,7 +92,7 @@ class SimpleLAS():
   def _nominate_next_messages(self):
     if self.n == 1:
       next_idx = (self.f + self.alpha * self.IM)[self.unlabeled_idxs].argmax()
-      return self.unlabeled_idxs[next_idx]
+      return np.array([self.unlabeled_idxs[next_idx]])
     else:
       tmp = (self.f + self.alpha * self.IM)[self.unlabeled_idxs]
       next_idx = np.argpartition(tmp, -self.n)[-self.n:]
@@ -171,4 +165,15 @@ class SimpleLAS():
     IM = self.f * (DF - Df_tilde)
     IM = IM * self.f.mean() / IM.mean()
     return IM.squeeze()
+  
+  def save(self, outpath):
+    if self.verbose:
+      print >> sys.stderr, 'simple_las: saving'
+    
+    f = h5py.File('%s-%s.h5' % (outpath, datetime.now().strftime('%Y%m%d_%H%M%s')))
+    f['f'] = self.f
+    f['IM'] = self.IM
+    f['labeled'] = self.labeled_idxs
+    
+    f.close()
 
