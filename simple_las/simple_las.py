@@ -170,7 +170,7 @@ class SimpleLAS(object):
     if self.verbose:
       print >> sys.stderr, 'simple_las: saving'
     
-    f = h5py.File('%s-%s.h5' % (outpath, datetime.now().strftime('%Y%m%d_%H%M%s')))
+    f = h5py.File('%s-%s.h5' % (outpath, datetime.now().strftime('%Y%m%d_%H%M%S')))
     f['f'] = self.f
     f['IM'] = self.IM
     f['labeled'] = self.labeled_idxs
