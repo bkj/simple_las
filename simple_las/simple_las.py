@@ -17,11 +17,11 @@
   ```
 """
 
-from __future__ import division
+from __future__ import print_function
 import sys
 import h5py
-from datetime import datetime
 import numpy as np
+from datetime import datetime
 
 class SimpleLAS(object):
   
@@ -99,10 +99,10 @@ class SimpleLAS(object):
       next_idx = next_idx[np.argsort(tmp[next_idx])][::-1]
       
       if self.verbose:
-        print np.vstack([
+        print(np.vstack([
           self.f[next_idx],
           self.alpha * self.IM[next_idx]
-        ]).T
+        ]).T)
       
       return np.array(self.unlabeled_idxs)[next_idx]
   
@@ -168,7 +168,7 @@ class SimpleLAS(object):
   
   def save(self, outpath):
     if self.verbose:
-      print >> sys.stderr, 'simple_las: saving'
+      print('simple_las: saving', file=sys.stderr)
     
     f = h5py.File('%s-%s.h5' % (outpath, datetime.now().strftime('%Y%m%d_%H%M%S')))
     f['f'] = self.f
