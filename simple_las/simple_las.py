@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-  simpleLAS.py
+  simple_las.py
   
   Simpler version of activeSearchInterface.linearizedAS w/ reduced functionality
   
@@ -17,13 +17,49 @@
   ```
 """
 
-from __future__ import print_function
-import sys
-import h5py
 import numpy as np
-from datetime import datetime
 
-class SimpleLAS(object):
+# --
+# Greedy Baseline
+
+class RandomSearch:
+    def __init__(self, X, init_labels, query_mean=False):
+        self.X              = X
+        
+        self.labeled_idxs   = list(init_labels.keys())
+        self.unlabeled_idxs = list(range(X.shape[0]))
+        for idx in self.labeled_idxs:
+            self.unlabeled_idxs.remove(idx)
+        
+        self.pos_idxs = [k for k,v in init_labels.items() if v]
+        
+        self.query_mean = query_mean
+    
+    def get_next_message(self):
+        
+        q = self.X[np.array(self.pos_idxs)]
+        
+        if self.query_mean:
+            q = q.mean(axis=0, keepdims=True)
+        
+        self.f = (q @ self.X.T).min(axis=0)
+        
+        self.f[self.labeled_idxs] = self.f.min() - 1
+        
+        top_idx = np.argmax(self.f)
+        return np.array([top_idx])
+    
+    def set_label(self, idxs, lbls):
+        for idx, lab in zip(idxs, lbls):
+            self.labeled_idxs.append(idx)
+            self.unlabeled_idxs.remove(idx)
+            if lab:
+                self.pos_idxs.append(idx)
+
+# --
+# Linearized Active Search
+
+class SimpleLAS:
   
   def __init__(self, X, init_labels={}, pi=0.05, eta=0.5, w0=None, alpha=0, n=1, verbose=False):
     """
@@ -58,7 +94,6 @@ class SimpleLAS(object):
     self.verbose        = verbose
     self.iter           = 0
     self.labels         = np.zeros(n_obs) - 1
-    # self.hits           = [sum(init_labels.values())]
     self.labeled_idxs   = list(init_labels.keys())
     self.unlabeled_idxs = list(set(range(self.labels.shape[0])) - set(self.labeled_idxs))
     
@@ -73,11 +108,11 @@ class SimpleLAS(object):
       self.next_message = np.random.choice(range(n_obs), n, replace=False)
 
   def set_label(self, idx, lbl):
-    assert((lbl == 0) or (lbl == 1))
+    assert isinstance(idx, np.ndarray)
+    assert isinstance(lbl, np.ndarray)
     
     # Update labels
     self.iter += 1
-    # self.hits.append(lbl)
     self.labels[idx] = lbl
     
     self.labeled_idxs.append(idx)
@@ -88,6 +123,12 @@ class SimpleLAS(object):
     
     # Update nomination
     self.next_message = self._nominate_next_messages()
+  
+  def get_next_message(self):
+    return self.next_message
+  
+  def get_scores(self):
+    return (self.f + self.alpha * self.IM)
   
   def _nominate_next_messages(self):
     if self.n == 1:
